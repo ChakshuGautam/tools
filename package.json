@@ -1,6 +1,7 @@
 {
   "name": "@tfw.in/tools",
   "version": "1.0.1",
+  "repository": "https://github.com/ChakshuGautam/tools",
   "type": "module",
   "bin": {
     "tools": "./dist/index.js"
