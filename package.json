@@ -1,0 +1,30 @@
+{
+  "name": "tools",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "tools": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "bun dist/index.js",
+    "dev": "tsc --watch",
+    "postinstall": "bun run build && chmod +x dist/index.js"
+  },
+  "dependencies": {
+    "commander": "^11.1.0",
+    "glob": "^10.3.10"
+  },
+  "description": "",
+  "main": "index.js",
+  "author": "Chakshu Gautam",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

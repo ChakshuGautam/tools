@@ -1,0 +1,8 @@
+name = "tools"
+entry = "src/index.js"
+
+[install]
+production = false
+
+[install.scopes]
+tools = "https://registry.npmjs.org/"

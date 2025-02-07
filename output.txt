@@ -1,0 +1,470 @@
+
+// File: tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": ["bun-types"],
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+} 
+
+// File: package.json
+{
+  "name": "tools",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "tools": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "bun dist/index.js",
+    "dev": "tsc --watch",
+    "postinstall": "bun run build && chmod +x dist/index.js"
+  },
+  "dependencies": {
+    "commander": "^11.1.0",
+    "glob": "^10.3.10"
+  },
+  "description": "",
+  "main": "index.js",
+  "author": "Chakshu Gautam",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
+
+// File: README.md
+# tools
+
+A collection of command-line tools for local development workflow.
+
+## Installation
+
+```bash
+# Install dependencies
+bun install
+
+# Link the package globally
+bun link
+```
+
+## Available Commands
+
+### pkg - File Concatenation Tool
+
+Concatenates text files and manages static files (images, PDFs, etc.) while respecting ignore patterns.
+
+```bash
+# Basic usage
+tools pkg --dest output.txt
+
+# Specify source directory
+tools pkg --source /path/to/source --dest output.txt
+
+# Verbose output
+tools pkg --source ./src --dest output.txt --verbose
+
+# JSON output (for piping)
+tools pkg --source ./src --dest output.txt --output json | some-other-tool
+```
+
+#### Features:
+
+- Concatenates text files into a single output file
+- Automatically handles static files:
+  - Creates a `static/` directory alongside the output file
+  - Copies static files (images, PDFs, etc.) to the static directory
+  - Renames files based on their path to avoid conflicts
+  - Adds references to static files in the output file
+- Respects .notebooklmignore or .gitignore patterns
+- Provides verbose output option for detailed processing information
+
+#### Options:
+
+- `-d, --dest <path>`: Destination path for output (default: "notebooklm")
+- `-s, --source <path>`: Source directory to process (default: current directory)
+- `-v, --verbose`: Show detailed execution information
+- `-o, --output <type>`: Output format (text/json) (default: "text")
+
+## Design Principles
+
+1. Each command follows the Unix philosophy:
+   - Do one thing and do it well
+   - Support piping and composition
+   - Handle text streams as input/output
+
+2. All commands support:
+   - Verbose output (-v, --verbose)
+   - JSON output for piping
+   - Clear error messages
+   - Help documentation
+
+3. Command output is always structured to enable:
+   - Human-readable output by default
+   - Machine-readable output when needed
+   - Piping between commands
+
+## Adding New Commands
+
+1. Create a new directory under `src/commands/` with your command name
+2. Create an `index.js` file that exports:
+   - `command`: Command name
+   - `description`: Command description
+   - `setup(program)`: Function to setup command options
+
+Example:
+```javascript
+// src/commands/newcommd/index.js
+export const command = 'newcommd';
+export const description = 'New command description';
+
+export function setup(program) {
+    program
+        .command(command)
+        .description(description)
+        .option('-v, --verbose', 'show detailed execution information')
+        .action(async (options) => {
+            // Command implementation
+        });
+}
+```
+
+## Help
+
+To see help for any command:
+```bash
+tools --help           # General help
+tools pkg --help       # Help for pkg command
+```
+
+This project was created using `bun init` in bun v1.0.25. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+
+
+// File: bunfig.toml
+name = "tools"
+entry = "src/index.js"
+
+[install]
+production = false
+
+[install.scopes]
+tools = "https://registry.npmjs.org/"
+
+// File: jsconfig.json
+{
+  "compilerOptions": {
+    "module": "ES2022",
+    "target": "ES2022",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "checkJs": true,
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+
+
+// File: src/index.ts
+#!/usr/bin/env bun
+import { Command } from 'commander';
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'url';
+
+class CLI extends Command {
+    constructor() {
+        super();
+        this.name('tools')
+            .description('CLI tools for local development workflow')
+            .version('1.0.0');
+
+        this.loadCommands().catch(error => {
+            console.error('Failed to load commands:', error);
+            process.exit(1);
+        });
+    }
+
+    private async loadCommands(): Promise<void> {
+        const __dirname = fileURLToPath(new URL('.', import.meta.url));
+        const commandsDir = join(__dirname, 'commands');
+
+        const commands = readdirSync(commandsDir, { withFileTypes: true })
+            .filter(dirent => dirent.isDirectory())
+            .map(dirent => dirent.name);
+
+        for (const cmd of commands) {
+            try {
+                const { default: command } = await import(`./commands/${cmd}/index.js`);
+                this.addCommand(command);
+            } catch (error) {
+                console.warn(`Failed to load command ${cmd}:`, error instanceof Error ? error.message : String(error));
+            }
+        }
+
+        this.parse();
+    }
+}
+
+new CLI(); 
+
+// File: src/types.ts
+export interface ProcessResult {
+    totalFiles: number;
+    successful: string[];
+    failed: Array<{
+        file: string;
+        error: string;
+    }>;
+    staticFiles: Array<{
+        original: string;
+        copied: string;
+    }>;
+    output: string;
+}
+
+export interface CommandOptions {
+    dest: string;
+    source: string;
+    verbose: boolean;
+    output: 'text' | 'json';
+} 
+
+// File: src/commands/BaseCommand.ts
+import { Command } from 'commander';
+
+export abstract class BaseCommand extends Command {
+    constructor(name: string) {
+        super(name);
+        this.option('-v, --verbose', 'show detailed execution information', false)
+            .option('-o, --output <type>', 'output format (text/json)', 'text');
+    }
+
+    protected displayJsonOutput(data: unknown): void {
+        process.stdout.write(JSON.stringify(data));
+    }
+
+    protected displayError(error: Error | unknown): void {
+        console.error('Error:', error instanceof Error ? error.message : String(error));
+        process.exit(1);
+    }
+
+    protected verboseLog(message: string): void {
+        if (this.opts().verbose) {
+            console.log(message);
+        }
+    }
+
+    // Force implementing classes to define these methods
+    abstract execute(options: unknown): Promise<void>;
+    abstract displayResults(result: unknown, options: unknown): void;
+} 
+
+// File: src/commands/pkg/index.ts
+import { resolve } from 'node:path';
+import { Command } from 'commander';
+import { concatFiles } from './concatFiles.js';
+import type { CommandOptions, ProcessResult } from '../../types.js';
+
+class PkgCommand extends Command {
+    constructor() {
+        super('pkg');
+        this
+            .description('Concatenate files while respecting ignore patterns')
+            .option('-d, --dest <path>', 'destination path for output', 'notebooklm')
+            .option('-s, --source <path>', 'source directory to process', process.cwd())
+            .option('-v, --verbose', 'show detailed execution information', false)
+            .option('-o, --output <type>', 'output format (text/json)', 'text')
+            .action(async (options: CommandOptions) => {
+                try {
+                    const sourcePath = resolve(options.source);
+                    const destPath = resolve(options.dest);
+
+                    const result = await concatFiles(destPath, sourcePath, options.verbose);
+
+                    if (options.verbose) {
+                        this.displayVerboseOutput(result);
+                    }
+
+                    if (options.output === 'json') {
+                        process.stdout.write(JSON.stringify(result));
+                    } else {
+                        console.log(`Files concatenated successfully from ${sourcePath} to ${destPath}`);
+                        if (result.staticFiles.length > 0) {
+                            console.log(`${result.staticFiles.length} static files copied to static/ directory`);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error:', error instanceof Error ? error.message : String(error));
+                    process.exit(1);
+                }
+            });
+    }
+
+    private displayVerboseOutput(result: ProcessResult): void {
+        console.log('\nExecution Summary:');
+        console.log('----------------');
+        console.log(`Total files processed: ${result.totalFiles}`);
+        console.log(`Successfully processed: ${result.successful.length}`);
+        console.log(`Failed to process: ${result.failed.length}`);
+        console.log(`Static files copied: ${result.staticFiles.length}`);
+
+        if (result.staticFiles.length > 0) {
+            console.log('\nStatic files:');
+            result.staticFiles.forEach(({ original, copied }) => {
+                console.log(`- ${original} → ${copied}`);
+            });
+        }
+
+        if (result.failed.length > 0) {
+            console.log('\nFailed files:');
+            result.failed.forEach(({ file, error }) => {
+                console.error(`- ${file}: ${error}`);
+            });
+        }
+    }
+}
+
+export default new PkgCommand(); 
+
+// File: src/commands/pkg/concatFiles.ts
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { glob } from 'glob';
+import { join, dirname } from 'node:path';
+import type { ProcessResult } from '../../types.js';
+
+const BLACKLIST = [
+    'bun.toml',
+    'bun.lockb',
+    'package-lock.json',
+    'yarn.lock',
+    'pnpm-lock.yaml'
+] as const;
+
+const STATIC_FILE_TYPES = [
+    '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.ico', '.svg',  // Images
+    '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', // Documents
+    '.mp3', '.mp4', '.wav', '.avi', '.mov', // Media
+    '.zip', '.rar', '.7z', '.tar', '.gz'    // Archives
+] as const;
+
+const getIgnorePatterns = async (sourcePath: string): Promise<string[]> => {
+    try {
+        const notebookIgnore = await readFile(join(sourcePath, '.notebooklmignore'), 'utf-8');
+        return notebookIgnore.split('\n').filter(line => line.trim() && !line.startsWith('#'));
+    } catch {
+        try {
+            const gitIgnore = await readFile(join(sourcePath, '.gitignore'), 'utf-8');
+            return gitIgnore.split('\n').filter(line => line.trim() && !line.startsWith('#'));
+        } catch {
+            return [];
+        }
+    }
+};
+
+const isStaticFile = (filepath: string): boolean => {
+    const ext = filepath.substring(filepath.lastIndexOf('.')).toLowerCase();
+    return STATIC_FILE_TYPES.includes(ext as typeof STATIC_FILE_TYPES[number]);
+};
+
+const createStaticFilename = (filepath: string): string => {
+    return filepath.replace(/[\/\\]/g, '_').replace(/^_+|_+$/g, '');
+};
+
+export async function concatFiles(
+    destPath: string,
+    sourcePath: string = process.cwd(),
+    verbose: boolean = false
+): Promise<ProcessResult> {
+    const result: ProcessResult = {
+        totalFiles: 0,
+        successful: [],
+        failed: [],
+        staticFiles: [],
+        output: destPath
+    };
+
+    const ignorePatterns = await getIgnorePatterns(sourcePath);
+    const defaultIgnores = [
+        'node_modules/**',
+        '.git/**',
+        destPath,
+        '*.log',
+        '*.lock',
+        'dist/**',
+        'build/**',
+        ...BLACKLIST
+    ];
+
+    const allIgnores = [...defaultIgnores, ...ignorePatterns];
+    const files = await glob('**/*.*', {
+        ignore: allIgnores,
+        nodir: true,
+        cwd: sourcePath,
+        absolute: true
+    });
+
+    result.totalFiles = files.length;
+    let concatenatedContent = '';
+
+    const staticDir = join(dirname(destPath), 'static');
+    await mkdir(staticDir, { recursive: true });
+
+    for (const file of files) {
+        try {
+            const relativePath = file.replace(sourcePath, '').replace(/^\//, '');
+
+            if (isStaticFile(file)) {
+                const staticFileName = createStaticFilename(relativePath);
+                const staticFilePath = join(staticDir, staticFileName);
+                await copyFile(file, staticFilePath);
+                result.staticFiles.push({
+                    original: relativePath,
+                    copied: `static/${staticFileName}`
+                });
+                concatenatedContent += `\n// Static File: ${relativePath}\n// Copied to: static/${staticFileName}\n\n`;
+            } else {
+                const content = await readFile(file, 'utf-8');
+                concatenatedContent += `\n// File: ${relativePath}\n${content}\n`;
+            }
+
+            result.successful.push(relativePath);
+
+            if (verbose) {
+                console.log(`Processed: ${relativePath}`);
+            }
+        } catch (error) {
+            result.failed.push({
+                file,
+                error: error instanceof Error ? error.message : String(error)
+            });
+            if (verbose) {
+                console.warn(`Failed to process ${file}: ${error instanceof Error ? error.message : String(error)}`);
+            }
+        }
+    }
+
+    await writeFile(destPath, concatenatedContent);
+    return result;
+}
+
+async function copyFile(source: string, dest: string): Promise<void> {
+    const content = await readFile(source);
+    await writeFile(dest, content);
+} 
