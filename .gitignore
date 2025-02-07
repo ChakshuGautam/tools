@@ -178,3 +178,6 @@ dist
 notebooklm
 dist/
 build/
+
+# Test files
+dist/**/*.test.js
