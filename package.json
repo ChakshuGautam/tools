@@ -1,6 +1,6 @@
 {
   "name": "@tfw.in/tools",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "repository": "https://github.com/ChakshuGautam/tools",
   "type": "module",
   "bin": {
