@@ -1,0 +1,21 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Project Overview
+
+This repository contains CLI utilities for common development tasks, implemented using TypeScript with Bun runtime.
+
+## Main Components
+
+- Entry Point: [src/index.ts](mdc:src/index.ts) - The main CLI application that loads commands dynamically
+- Commands:
+  - [DeepWiki](mdc:src/commands/deepwiki/index.ts) - Downloads and parses DeepWiki content for GitHub repositories
+  - [Package Files](mdc:src/commands/pkg/index.ts) - Concatenates files while respecting ignore patterns
+
+## Project Structure
+
+- Commands are defined in [src/commands/](mdc:src/commands) directory
+- Each command is a module with its own directory and an index.ts file
+- The base command class is defined in [src/commands/BaseCommand.ts](mdc:src/commands/BaseCommand.ts)

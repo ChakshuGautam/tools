@@ -1,0 +1,33 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# DeepWiki Command
+
+The DeepWiki command downloads and parses wiki content from DeepWiki.com for GitHub repositories.
+
+## Key Files
+
+- [src/commands/deepwiki/index.ts](mdc:src/commands/deepwiki/index.ts) - Main command implementation
+- [src/commands/deepwiki/rscParser.ts](mdc:src/commands/deepwiki/rscParser.ts) - Parser for RSC (React Server Components) content
+
+## Functionality
+
+The command:
+1. Fetches the DeepWiki home page for a GitHub repository
+2. Parses the wiki structure from the sidebar links
+3. Downloads each wiki page using RSC format
+4. Converts the content to Markdown
+5. Saves files with a structured naming convention
+
+## Usage
+
+```bash
+tools deepwiki <githubSlug> [options]
+```
+
+Where:
+- `githubSlug` is the GitHub repository in format `org/repo`
+- Options:
+  - `-o, --output <path>` - Output directory (defaults to `./output`)

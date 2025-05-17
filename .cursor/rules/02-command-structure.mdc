@@ -1,0 +1,32 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Command Structure
+
+Each command in the project follows a consistent structure:
+
+## Command Definition
+
+Commands are defined as classes that extend the Commander.js `Command` class. Each command:
+
+1. Has an `index.ts` file in its own directory under [src/commands/](mdc:src/commands)
+2. Defines options and arguments using Commander.js API
+3. Implements an action handler for command execution
+
+## Command Loading
+
+Commands are dynamically loaded by the CLI class in [src/index.ts](mdc:src/index.ts). The loading process:
+
+1. Scans the commands directory for subdirectories
+2. Imports the default export from each command's index.js file
+3. Adds the command to the CLI using `this.addCommand(command)`
+
+## Adding New Commands
+
+To add a new command:
+
+1. Create a directory under `src/commands/` with your command name
+2. Create an `index.ts` file that exports a Command instance as default
+3. Implement your command logic in additional files as needed

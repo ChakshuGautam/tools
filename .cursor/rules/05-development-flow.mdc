@@ -1,0 +1,33 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Development Workflow
+
+This project uses TypeScript with Bun as the runtime. Here's how to work with the codebase:
+
+## Key Configuration Files
+
+- [package.json](mdc:package.json) - Project dependencies and scripts
+- [tsconfig.json](mdc:tsconfig.json) - TypeScript configuration
+
+## Development Scripts
+
+- `bun run build` - Builds the project using TypeScript
+- `bun run start` - Runs the built application
+- `bun run dev` - Runs TypeScript in watch mode for development
+- `bun run test` - Runs tests with Bun's test runner
+
+## Project Structure
+
+- [src/](mdc:src) - Source code directory
+- [dist/](mdc:dist) - Build output directory
+- [src/types.ts](mdc:src/types.ts) - Common TypeScript interfaces and types
+
+## Adding Features
+
+1. To add a new command, create a directory under `src/commands/`
+2. Implement the command following the command pattern in existing commands
+3. Build the project with `bun run build`
+4. Test your changes with `bun dist/index.js your-command`

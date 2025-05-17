@@ -21,8 +21,11 @@
     "test": "bun test src/**/*.test.ts"
   },
   "dependencies": {
+    "@types/jsdom": "^21.1.7",
+    "axios": "^1.9.0",
     "commander": "^11.1.0",
-    "glob": "^10.3.10"
+    "glob": "^10.3.10",
+    "jsdom": "^26.1.0"
   },
   "description": "",
   "main": "index.js",
