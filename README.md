@@ -29,29 +29,7 @@ Options:
 - `--verbose`: Show detailed output
 - `--output`: Output format (text/json)
 
-### DeepWiki
-
-Download and convert DeepWiki content from GitHub repositories to markdown files:
-
-```bash
-tools deepwiki <githubSlug> --output ./docs
-```
-
-Examples:
-
-```bash
-# Download Next.js documentation
-tools deepwiki vercel/next.js --output ./next-docs
-
-# Download VS Code documentation
-tools deepwiki microsoft/vscode --output ./vscode-docs
-```
-
-Options:
-
-- `--output`: Output directory (default: ./output)
-
-### Ignore Patterns
+#### Ignore Patterns
 
 Uses `.notebooklmignore` or `.gitignore` for excluding files. Default ignores:
 
@@ -60,6 +38,21 @@ Uses `.notebooklmignore` or `.gitignore` for excluding files. Default ignores:
 - build/dist directories
 - Log files
 - Lock files
+
+### DeepWiki
+
+Download and convert DeepWiki content from GitHub repositories to markdown files:
+
+```bash
+tools deepwiki <githubSlug> --output ./docs
+
+# Download Next.js documentation
+tools deepwiki vercel/next.js --output ./next-docs
+```
+
+Options:
+
+- `--output`: Output directory (default: ./output)
 
 ## License
 
