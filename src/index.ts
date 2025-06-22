@@ -4,6 +4,7 @@ import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'url';
 
+// TODO: Enhance CLI help UI to be similar to the Modal CLI (see image provided by user)
 class CLI extends Command {
     constructor() {
         super();
@@ -38,4 +39,4 @@ class CLI extends Command {
     }
 }
 
-new CLI(); 
+new CLI();
